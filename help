@@ -1,6 +1,6 @@
 #!/bin/sh
 
- commit() {
+commit() {
   # This script is used to write a conventional commit message.
   # It prompts the user to choose the type of commit as specified in the
   # conventional commit spec. And then prompts for the summary and detailed
@@ -27,6 +27,18 @@
 
   # Commit these changes if user confirms
   gum confirm "Commit changes?" && git commit -m "$SUMMARY" -m "$DESCRIPTION"
+}
+
+build() {
+  go build -o bin/envme -ldflags "-X main.version=$(gum input --placeholder 'v0.0.1')" main.go
+}
+
+record() {
+  file=$(gum choose $(ls tests/recorder/*.tape))
+  vhs $file
+  file=$(gum choose $(ls *.gif))
+  /usr/bin/open $(pwd)/$file
+  pop -a $file -f 'Haqi <onboarding@resend.dev>' -t 'hakiramadhani@gmail.com' -s 'New TUI Demo' -b 'Hi, Haqi. New demo is ready. I Have attached the demo.' --preview
 }
 
 $@

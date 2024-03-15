@@ -74,7 +74,21 @@ var exposeCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("Exposing service %s on port %s with hostname %s\n", args[0], args[1], args[2])
+		var name, port, hostname string
+		if len(args) < 3 && cmd.Flags().Changed("interactive") {
+			_, err := tea.NewProgram(forms.NewExposeForm()).Run()
+			if err != nil {
+				return err
+			}
+			name = viper.GetString("container_name")
+			port = viper.GetString("port")
+			hostname = viper.GetString("hostname")
+		} else {
+			name = args[0]
+			port = args[1]
+			hostname = args[2]
+		}
+		fmt.Printf("Exposing service %s on port %s with hostname %s\n", name, port, hostname)
 		return nil
 	},
 }
