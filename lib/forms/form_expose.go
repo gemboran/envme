@@ -30,6 +30,7 @@ func NewExposeForm() ExposeForm {
 			huh.NewSelect[string]().
 				Key("container_name").
 				Title("Service name").
+				Options(huh.NewOptions("cloudflared")...). // TODO: Get list of services from appDir
 				Value(&m.ContainerName).
 				Validate(
 					VSave("container_name"),
@@ -50,7 +51,7 @@ func NewExposeForm() ExposeForm {
 				Placeholder("api-local.envme.bid").
 				Value(&m.Hostname).
 				Validate(
-					VRequiredAndSave("port", "Port is required"),
+					VRequiredAndSave("hostname", "Port is required"),
 				),
 
 			huh.NewConfirm().
@@ -103,9 +104,9 @@ func (m ExposeForm) View() string {
 			m.compose += "tunnel: localstack" + n
 			m.compose += "credentials-file: credentials.json" + n
 			m.compose += "ingress:" + n
-			m.compose += t + "hostname: " + hostname + n
-			m.compose += t + "service: http://" + containerName + ":" + port + n
-			m.compose += t + "service: http_status:404"
+			m.compose += t + "- hostname: " + s.Highlight.Render(hostname) + n
+			m.compose += t + t + "service: " + s.Highlight.Render("http://"+containerName+":"+port) + n
+			m.compose += t + "- service: http_status:404"
 
 			viper.Set("compose", m.compose)
 

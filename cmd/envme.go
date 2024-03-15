@@ -62,7 +62,6 @@ var listCmd = &cobra.Command{
 }
 
 // exposeCmd handles the `envme expose` command
-// TODO: Handle interactive mode when no args are provided and the interactive flag is set to true
 var exposeCmd = &cobra.Command{
 	Use:     "expose <service-name> <port> <hostname>",
 	Aliases: []string{"publish", "p"},
