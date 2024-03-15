@@ -1,4 +1,4 @@
-package forms
+package tui
 
 import (
 	"fmt"

@@ -29,6 +29,10 @@ commit() {
   gum confirm "Commit changes?" && git commit -m "$SUMMARY" -m "$DESCRIPTION"
 }
 
+run() {
+  go run main.go $@
+}
+
 build() {
   go build -o bin/envme -ldflags "-X main.version=$(gum input --placeholder 'v0.0.1')" main.go
 }

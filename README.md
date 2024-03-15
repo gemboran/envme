@@ -51,5 +51,4 @@ Usage:
 
 Flags:
     -h, --help            help for services
-        --no-interactive  not using interactive mode
 ```

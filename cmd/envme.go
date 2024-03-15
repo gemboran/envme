@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"envme/lib/forms"
+	"envme/lib/tui"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
@@ -37,8 +37,8 @@ func init() {
 	_ = viper.BindPFlag("expose", createCmd.Flags().Lookup("expose"))
 
 	// Add flags to the `envme list` command
-	listCmd.PersistentFlags().Bool("no-interactive", false, "List services without interactive mode")
-	_ = viper.BindPFlag("no-interactive", listCmd.Flags().Lookup("no-interactive"))
+	// listCmd.PersistentFlags().Bool("no-interactive", false, "List services without interactive mode")
+	// _ = viper.BindPFlag("no-interactive", listCmd.Flags().Lookup("no-interactive"))
 }
 
 // createCmd handles the `envme create` command
@@ -75,7 +75,7 @@ var exposeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var name, port, hostname string
 		if len(args) < 3 && cmd.Flags().Changed("interactive") {
-			_, err := tea.NewProgram(forms.NewExposeForm()).Run()
+			_, err := tea.NewProgram(tui.NewExposeForm()).Run()
 			if err != nil {
 				return err
 			}
@@ -106,7 +106,7 @@ var createServiceCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var name, image string
 		if len(args) < 2 && cmd.Flags().Changed("interactive") {
-			_, err := tea.NewProgram(forms.NewServiceForm()).Run()
+			_, err := tea.NewProgram(tui.NewServiceForm()).Run()
 			if err != nil {
 				return err
 			}
@@ -142,7 +142,7 @@ var createDevCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var name, dir string
 		if len(args) < 2 && cmd.Flags().Changed("interactive") {
-			_, err := tea.NewProgram(forms.NewDevelopmentForm()).Run()
+			_, err := tea.NewProgram(tui.NewDevelopmentForm()).Run()
 			if err != nil {
 				return err
 			}
@@ -158,12 +158,15 @@ var createDevCmd = &cobra.Command{
 }
 
 // listServicesCmd handles the `envme list services` command
-// TODO: Handle interactive mode when no args are provided and the interactive flag is set to true
 var listServicesCmd = &cobra.Command{
 	Use:     "service",
 	Aliases: []string{"srv", "s"},
 	Short:   "List services",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		_, err := tea.NewProgram(tui.NewListService()).Run()
+		if err != nil {
+			return err
+		}
 		fmt.Println("Listing services")
 		return nil
 	},

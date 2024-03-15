@@ -1,4 +1,4 @@
-package forms
+package tui
 
 import (
 	"fmt"
@@ -9,20 +9,19 @@ import (
 	"strings"
 )
 
-type DevelopmentForm struct {
+type ServiceForm struct {
 	Model
 	compose string
 
 	ContainerName string
-	Dir           string
+	Image         string
 	Env           string
 	Expose        string
-	Template      string
 }
 
-func NewDevelopmentForm() DevelopmentForm {
-	m := DevelopmentForm{
-		Model: NewModel(maxWidth),
+func NewServiceForm() ServiceForm {
+	m := ServiceForm{
+		Model: NewModel(0),
 	}
 	m.lg = lipgloss.DefaultRenderer()
 	m.styles = NewStyles(m.lg)
@@ -31,20 +30,20 @@ func NewDevelopmentForm() DevelopmentForm {
 		huh.NewGroup(
 			huh.NewInput().
 				Key("container_name").
-				Title("Dev name").
+				Title("Service name").
 				Placeholder("api").
 				Value(&m.ContainerName).
 				Validate(
-					VRequiredAndSave("container_name", "Dev name is required"),
+					VRequiredAndSave("container_name", "Service name is required"),
 				),
 
 			huh.NewInput().
-				Key("dir").
-				Title("Directory (Dockerfile)").
-				Placeholder("/path/to/api").
-				Value(&m.Dir).
+				Key("image").
+				Title("Image name").
+				Placeholder("backend:latest").
+				Value(&m.Image).
 				Validate(
-					VRequiredAndSave("dir", "Directory is required"),
+					VRequiredAndSave("image", "Image name is required"),
 				),
 
 			huh.NewText().
@@ -68,15 +67,6 @@ func NewDevelopmentForm() DevelopmentForm {
 				).
 				Lines(2),
 
-			huh.NewSelect[string]().
-				Key("template").
-				Title("Template (Dockerfile)").
-				Options(huh.NewOptions("(none)", "Next.js", "Nest.js", "Laravel")...).
-				Value(&m.Template).
-				Validate(
-					VSave("template"),
-				).Description("Select (none) if you already have a Dockerfile"),
-
 			huh.NewConfirm().
 				Key("done").
 				Title("All done?").
@@ -96,7 +86,7 @@ func NewDevelopmentForm() DevelopmentForm {
 	return m
 }
 
-func (m DevelopmentForm) View() string {
+func (m ServiceForm) View() string {
 	s := m.styles
 
 	switch m.form.State {
@@ -117,7 +107,7 @@ func (m DevelopmentForm) View() string {
 			var (
 				header    = s.Help.Render("docker-compose.yaml")
 				service   = s.Help.Render("(none)")
-				build     = s.Help.Render("(none)")
+				image     = s.Help.Render("(none)")
 				additions = ""
 				container = ""
 			)
@@ -127,15 +117,13 @@ func (m DevelopmentForm) View() string {
 				header = s.Help.Render(containerName + "/" + header)
 				service = s.Highlight.Render(containerName) + ":"
 			} else {
-				build = ""
+				image = ""
 			}
 
-			dir := m.form.GetString("dir")
+			imageName := m.form.GetString("image")
 			envValue := m.form.GetString("env")
-			if dir != "" {
-				build = "build:" + n
-				build += t + t + t + "context: " + s.Highlight.Render(dir) + n
-				build += t + t + t + "target: " + s.Highlight.Render("development")
+			if imageName != "" {
+				image = "image: " + s.Highlight.Render(imageName)
 				container = "container_name: " + s.Highlight.Render(containerName)
 				additions += t + t + "restart: unless-stopped" + n
 				if envValue != "" {
@@ -149,8 +137,6 @@ func (m DevelopmentForm) View() string {
 				additions += t + t + t + "- envme" + n
 				additions += t + t + "extra_hosts:" + n
 				additions += t + t + t + "- host.docker.internal:host-gateway" + n
-				additions += t + t + "volumes:" + n
-				additions += t + t + t + "- " + s.Highlight.Render(dir) + ":/app" + n
 				additions += n
 				additions += "networks:" + n
 				additions += t + "envme:" + n
@@ -163,7 +149,7 @@ func (m DevelopmentForm) View() string {
 			m.compose += n
 			m.compose += "services:" + n
 			m.compose += t + service + n
-			m.compose += t + t + build + n
+			m.compose += t + t + image + n
 			m.compose += t + t + container + n
 			m.compose += additions
 
@@ -179,7 +165,7 @@ func (m DevelopmentForm) View() string {
 		}
 
 		errors := m.form.Errors()
-		header := m.appBoundaryView("Create Development Form")
+		header := m.appBoundaryView("Create Service Form")
 		if len(errors) > 0 {
 			header = m.appErrorBoundaryView(m.errorView())
 		}
@@ -194,11 +180,11 @@ func (m DevelopmentForm) View() string {
 	}
 }
 
-func (m DevelopmentForm) Init() tea.Cmd {
+func (m ServiceForm) Init() tea.Cmd {
 	return m.form.Init()
 }
 
-func (m DevelopmentForm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m ServiceForm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = min(msg.Width, maxWidth) - m.styles.Base.GetHorizontalFrameSize()
