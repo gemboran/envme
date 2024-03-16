@@ -39,6 +39,9 @@ func init() {
 	// Add flags to the `envme list` command
 	// listCmd.PersistentFlags().Bool("no-interactive", false, "List services without interactive mode")
 	// _ = viper.BindPFlag("no-interactive", listCmd.Flags().Lookup("no-interactive"))
+
+	// Default network name
+	viper.SetDefault("network", "envme")
 }
 
 // createCmd handles the `envme create` command
