@@ -1,21 +1,11 @@
 #!/bin/sh
 
 commit() {
-  # This script is used to write a conventional commit message.
-  # It prompts the user to choose the type of commit as specified in the
-  # conventional commit spec. And then prompts for the summary and detailed
-  # description of the message and uses the values provided. as the summary and
-  # details of the message.
-  #
-  # If you want to add a simpler version of this script to your dotfiles, use:
-  #
-  # alias gcm='git commit -m "$(gum input)" -m "$(gum write)"'
-
-  if [ -z "$(git status -s -uno | grep -v '^ ' | awk '{print $2}')" ]; then
-      gum confirm "Stage all?" && git add .
-  fi
+  git status -s
+  gum confirm "Stage all?" && git add . || git add $(gum choose $(git status -s | awk '{print $2}') --no-limit --cursor-prefix="[ ] " --selected-prefix="[x] " --unselected-prefix="[ ] ")
 
   TYPE=$(gum choose "fix" "feat" "docs" "style" "refactor" "test" "chore" "revert")
+  test -n "$TYPE" || exit 1
   SCOPE=$(gum input --placeholder "scope")
 
   # Since the scope is optional, wrap it in parentheses if it has a value.
@@ -34,7 +24,8 @@ run() {
 }
 
 build() {
-  go build -o bin/envme -ldflags "-X main.version=$(gum input --placeholder 'v0.0.1')" main.go
+  CURRENT_VERSION=$(bin/envme -v | awk '{print $3}')
+  go build -o bin/envme -ldflags "-X main.version=$(gum input --placeholder 'v0.0.1' --value=$CURRENT_VERSION)" main.go
 }
 
 record() {
@@ -42,7 +33,20 @@ record() {
   vhs $file
   file=$(gum choose $(ls *.gif))
   /usr/bin/open $(pwd)/$file
-  pop -a $file -f 'Haqi <onboarding@resend.dev>' -t 'hakiramadhani@gmail.com' -s 'New TUI Demo' -b 'Hi, Haqi. New demo is ready. I Have attached the demo.' --preview
+  confirm && pop -a $file -t 'hakiramadhani@gmail.com' -s 'New TUI Demo' -b 'Hi, Haqi. New demo is ready. I Have attached the demo.'
 }
 
-$@
+helper() {
+  echo "Usage: help <command>"
+  echo "Available commands:"
+  echo "  commit    Stage and commit changes"
+  echo "  run       Run the application"
+  echo "  build     Build the application"
+  echo "  record    Record a new tape"
+}
+
+if [ $# -eq 0 ]; then
+  helper
+else
+  "$@"
+fi

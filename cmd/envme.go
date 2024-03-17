@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"envme/lib/docker"
 	"envme/lib/tui"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
@@ -108,6 +109,7 @@ var createServiceCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var name, image string
+		network := viper.GetString("network")
 		if len(args) < 2 && cmd.Flags().Changed("interactive") {
 			_, err := tea.NewProgram(tui.NewServiceForm()).Run()
 			if err != nil {
@@ -119,8 +121,11 @@ var createServiceCmd = &cobra.Command{
 			name = args[0]
 			image = args[1]
 		}
-		fmt.Printf("Creating service %s with image %s\n", name, image)
-		return nil
+		err := docker.ReadDotEnv()
+		if err != nil {
+			return err
+		}
+		return docker.RunContainer(name, image, network, true)
 	},
 }
 

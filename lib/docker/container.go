@@ -13,7 +13,7 @@ import (
 
 // RunContainer runs a container with the given image and environment variables
 // It's equivalent to running `docker run -e PORT=8080 backend:latest` or with `-d` flag
-func RunContainer(detach bool) error {
+func RunContainer(containerName, image, networkName string, detach bool) error {
 	ctx := context.Background()
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -29,7 +29,6 @@ func RunContainer(detach bool) error {
 	defer reader.Close()
 	io.Copy(os.Stdout, reader)
 
-	networkName := viper.GetString("network")
 	if err := EnsureNetworkExists(ctx, cli, networkName); err != nil {
 		return err
 	}
@@ -40,9 +39,9 @@ func RunContainer(detach bool) error {
 	}
 
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Image: viper.GetString("image"),
+		Image: image,
 		Env:   viper.GetStringSlice("env"),
-	}, hostConfig, nil, nil, viper.GetString("container_name"))
+	}, hostConfig, nil, nil, containerName)
 	if err != nil {
 		return err
 	}
