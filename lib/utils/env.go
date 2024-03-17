@@ -1,4 +1,4 @@
-package docker
+package utils
 
 import "github.com/spf13/viper"
 
@@ -24,4 +24,22 @@ func ReadDotEnv() error {
 	viper.Set("env", configSlice)
 
 	return nil
+}
+
+func ConvertEnvToMap() map[string]string {
+	env := viper.GetStringSlice("env")
+	envMap := make(map[string]string)
+	for _, e := range env {
+		envMap[e] = e
+	}
+	return envMap
+}
+
+func ConvertEnvToMapP() map[string]*string {
+	env := viper.GetStringSlice("env")
+	envMap := make(map[string]*string)
+	for _, e := range env {
+		envMap[e] = &e
+	}
+	return envMap
 }

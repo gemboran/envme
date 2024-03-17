@@ -2,6 +2,17 @@
 
 Manage local development environments with ease. Expose your local services to the world.
 
+## Installation
+
+### From source
+
+```shell
+git clone https://github.com/gemboran/envme.git
+cd envme
+./help build
+bin/envme -v
+```
+
 ## Usage
 
 ### Create a new service

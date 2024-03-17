@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"envme/lib/docker"
 	"envme/lib/tui"
+	"envme/lib/utils"
+	"envme/pkg/envme"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
@@ -121,11 +122,11 @@ var createServiceCmd = &cobra.Command{
 			name = args[0]
 			image = args[1]
 		}
-		err := docker.ReadDotEnv()
+		err := utils.ReadDotEnv()
 		if err != nil {
 			return err
 		}
-		return docker.RunContainer(name, image, network, true)
+		return envme.CreateService(cmd.Context(), name, image, network)
 	},
 }
 
