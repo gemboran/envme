@@ -114,6 +114,7 @@ var createServiceCmd = &cobra.Command{
 		if len(args) < 2 && cmd.Flags().Changed("interactive") {
 			_, err := tea.NewProgram(tui.NewServiceForm()).Run()
 			if err != nil {
+				fmt.Printf("Error runnning tui program: %v\n", err)
 				return err
 			}
 			name = viper.GetString("container_name")
@@ -124,6 +125,7 @@ var createServiceCmd = &cobra.Command{
 		}
 		err := utils.ReadDotEnv()
 		if err != nil {
+			fmt.Printf("Error reading .env file: %v\n", err)
 			return err
 		}
 		return envme.CreateService(cmd.Context(), name, image, network)
@@ -149,20 +151,26 @@ var createDevCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var name, dir string
+		var name, dir, template string
 		if len(args) < 2 && cmd.Flags().Changed("interactive") {
 			_, err := tea.NewProgram(tui.NewDevelopmentForm()).Run()
 			if err != nil {
+				fmt.Printf("Error runnning tui program: %v\n", err)
 				return err
 			}
 			name = viper.GetString("container_name")
-			dir = viper.GetString("directory")
+			dir = viper.GetString("dir")
+			template = viper.GetString("template")
 		} else {
 			name = args[0]
 			dir = args[1]
 		}
-		fmt.Printf("Creating development environment %s build from %s\n", name, dir)
-		return nil
+		err := utils.ReadDotEnv()
+		if err != nil {
+			fmt.Printf("Error reading .env file: %v\n", err)
+			return err
+		}
+		return envme.CreateDev(cmd.Context(), name, dir, template, viper.GetString("network"))
 	},
 }
 
